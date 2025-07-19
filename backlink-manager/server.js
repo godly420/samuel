@@ -9,6 +9,7 @@ const cheerio = require('cheerio');
 const cors = require('cors');
 const ReportGenerator = require('./reportGenerator');
 const GitHubIntegration = require('./githubIntegration');
+const auth = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -61,7 +62,126 @@ db.serialize(() => {
     });
 });
 
-app.post('/api/upload', upload.single('csvFile'), (req, res) => {
+// Authentication routes
+app.post('/api/auth/login', (req, res) => {
+    const { username, password, rememberMe } = req.body;
+    
+    if (!username || !password) {
+        return res.status(400).json({
+            success: false,
+            message: 'Username and password are required'
+        });
+    }
+    
+    if (!auth.verifyCredentials(username, password)) {
+        return res.status(401).json({
+            success: false,
+            message: 'Invalid username or password'
+        });
+    }
+    
+    const session = auth.createSession(username, rememberMe);
+    
+    res.json({
+        success: true,
+        token: session.token,
+        expiresAt: session.expiresAt,
+        message: 'Login successful'
+    });
+});
+
+app.post('/api/auth/logout', auth.requireAuth, (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (token) {
+        auth.deleteSession(token);
+    }
+    
+    res.json({
+        success: true,
+        message: 'Logout successful'
+    });
+});
+
+app.get('/api/auth/verify', (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+        return res.json({ valid: false, message: 'No token provided' });
+    }
+    
+    const verification = auth.verifySession(token);
+    
+    res.json({
+        valid: verification.valid,
+        message: verification.reason || 'Token is valid',
+        user: verification.valid ? verification.session.username : null
+    });
+});
+
+// Serve login page for unauthenticated users
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Protect main dashboard
+app.get('/', (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    // Check if accessing via browser (no auth header)
+    if (!authHeader) {
+        // Check for token in cookies or redirect to login
+        res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Checking Authentication...</title>
+        </head>
+        <body>
+            <script>
+                const token = localStorage.getItem('authToken');
+                if (token) {
+                    fetch('/api/auth/verify', {
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.valid) {
+                            window.location.href = '/dashboard';
+                        } else {
+                            localStorage.removeItem('authToken');
+                            window.location.href = '/login';
+                        }
+                    })
+                    .catch(() => {
+                        window.location.href = '/login';
+                    });
+                } else {
+                    window.location.href = '/login';
+                }
+            </script>
+        </body>
+        </html>
+        `);
+    } else {
+        const verification = auth.verifySession(token);
+        if (verification.valid) {
+            res.sendFile(path.join(__dirname, 'public', 'index.html'));
+        } else {
+            res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+    }
+});
+
+// Serve dashboard for authenticated users
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.post('/api/upload', auth.requireAuth, upload.single('csvFile'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
     }
@@ -262,7 +382,7 @@ async function checkBacklink(backlink) {
     }
 }
 
-app.post('/api/check-links', async (req, res) => {
+app.post('/api/check-links', auth.requireAuth, async (req, res) => {
     const { forceAll } = req.body;
     
     let query;
@@ -334,7 +454,7 @@ app.post('/api/check-links', async (req, res) => {
     });
 });
 
-app.get('/api/backlinks', (req, res) => {
+app.get('/api/backlinks', auth.requireAuth, (req, res) => {
     const { page = 1, limit = 50, status, link_found } = req.query;
     const offset = (page - 1) * limit;
     
@@ -382,7 +502,7 @@ app.get('/api/backlinks', (req, res) => {
     });
 });
 
-app.get('/api/stats', (req, res) => {
+app.get('/api/stats', auth.requireAuth, (req, res) => {
     db.get(`SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN status = 'live' THEN 1 ELSE 0 END) as live_count,
@@ -398,7 +518,7 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
-app.get('/api/export', (req, res) => {
+app.get('/api/export', auth.requireAuth, (req, res) => {
     db.all('SELECT * FROM backlinks ORDER BY created_at DESC', (err, rows) => {
         if (err) {
             return res.status(500).json({ error: 'Database error' });
@@ -424,7 +544,7 @@ app.get('/api/export', (req, res) => {
     });
 });
 
-app.delete('/api/backlinks/:id', (req, res) => {
+app.delete('/api/backlinks/:id', auth.requireAuth, (req, res) => {
     db.run('DELETE FROM backlinks WHERE id = ?', [req.params.id], (err) => {
         if (err) {
             return res.status(500).json({ error: 'Database error' });
@@ -434,7 +554,7 @@ app.delete('/api/backlinks/:id', (req, res) => {
 });
 
 // Bulk delete endpoint
-app.post('/api/backlinks/bulk-delete', (req, res) => {
+app.post('/api/backlinks/bulk-delete', auth.requireAuth, (req, res) => {
     const { ids } = req.body;
     
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -453,7 +573,7 @@ app.post('/api/backlinks/bulk-delete', (req, res) => {
 });
 
 // Get all backlink IDs for cross-page selection
-app.get('/api/backlinks/ids', (req, res) => {
+app.get('/api/backlinks/ids', auth.requireAuth, (req, res) => {
     const { status, link_found } = req.query;
     
     let whereClause = 'WHERE 1=1';
@@ -483,7 +603,7 @@ app.get('/api/backlinks/ids', (req, res) => {
 });
 
 // Delete all backlinks
-app.delete('/api/backlinks/delete-all', (req, res) => {
+app.delete('/api/backlinks/delete-all', auth.requireAuth, (req, res) => {
     db.run('DELETE FROM backlinks', [], function(err) {
         if (err) {
             return res.status(500).json({ error: 'Database error' });
@@ -498,7 +618,7 @@ app.delete('/api/backlinks/delete-all', (req, res) => {
 });
 
 // Debug endpoint to check database
-app.get('/api/debug', (req, res) => {
+app.get('/api/debug', auth.requireAuth, (req, res) => {
     db.all('SELECT * FROM backlinks ORDER BY created_at DESC', (err, rows) => {
         if (err) {
             return res.status(500).json({ error: 'Database error' });
@@ -511,7 +631,7 @@ app.get('/api/debug', (req, res) => {
 });
 
 // Test endpoint to check a specific link
-app.post('/api/test-link', async (req, res) => {
+app.post('/api/test-link', auth.requireAuth, async (req, res) => {
     const { live_link, target_url, target_anchor } = req.body;
     
     if (!live_link || !target_url || !target_anchor) {
@@ -527,7 +647,7 @@ app.post('/api/test-link', async (req, res) => {
 });
 
 // CSV template download endpoint
-app.get('/api/template', (req, res) => {
+app.get('/api/template', auth.requireAuth, (req, res) => {
     const csvTemplate = `live_link,target_url,target_anchor
 https://example.com/blog/post1,https://mysite.com,My Site
 https://example.com/resources,https://mysite.com/products,Our Products
@@ -539,7 +659,7 @@ https://example.com/partners,https://mysite.com/services,Professional Services`;
 });
 
 // Generate comprehensive reports
-app.get('/api/reports/generate', async (req, res) => {
+app.get('/api/reports/generate', auth.requireAuth, async (req, res) => {
     try {
         const reportGenerator = new ReportGenerator(db);
         const { excelPath, pdfPath } = await reportGenerator.generateAllReports();
@@ -559,7 +679,7 @@ app.get('/api/reports/generate', async (req, res) => {
 });
 
 // Download Excel report
-app.get('/api/reports/excel/:filename', (req, res) => {
+app.get('/api/reports/excel/:filename', auth.requireAuth, (req, res) => {
     const filename = req.params.filename;
     const filepath = path.join(__dirname, 'reports', filename);
     
@@ -571,7 +691,7 @@ app.get('/api/reports/excel/:filename', (req, res) => {
 });
 
 // Download PDF or HTML report
-app.get('/api/reports/pdf/:filename', (req, res) => {
+app.get('/api/reports/pdf/:filename', auth.requireAuth, (req, res) => {
     const filename = req.params.filename;
     let filepath = path.join(__dirname, 'reports', filename);
     
@@ -592,7 +712,7 @@ app.get('/api/reports/pdf/:filename', (req, res) => {
 });
 
 // List available reports
-app.get('/api/reports', (req, res) => {
+app.get('/api/reports', auth.requireAuth, (req, res) => {
     const reportsDir = path.join(__dirname, 'reports');
     
     if (!fs.existsSync(reportsDir)) {
@@ -622,11 +742,11 @@ app.get('/api/reports', (req, res) => {
 });
 
 // GitHub Integration endpoints
-app.get('/api/github/status', (req, res) => {
+app.get('/api/github/status', auth.requireAuth, (req, res) => {
     res.json(github.getStatus());
 });
 
-app.post('/api/github/upload', async (req, res) => {
+app.post('/api/github/upload', auth.requireAuth, async (req, res) => {
     try {
         const result = await github.handleManualUpload();
         if (result.success) {
@@ -641,7 +761,7 @@ app.post('/api/github/upload', async (req, res) => {
 });
 
 // Configure GitHub settings
-app.post('/api/github/configure', (req, res) => {
+app.post('/api/github/configure', auth.requireAuth, (req, res) => {
     const { token, owner, repo, branch } = req.body;
     
     // In a production app, you'd want to securely store these

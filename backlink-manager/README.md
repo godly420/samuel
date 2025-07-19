@@ -6,6 +6,13 @@ A comprehensive, full-featured backlink management tool that monitors, verifies,
 
 ## Features
 
+### 🔐 **Secure Authentication**
+- Token-based login system
+- Default admin credentials: admin / 3*jcx3EI@UR9
+- Automatic session management and logout
+- Session expiration and cleanup
+- All API endpoints protected
+
 ### 🔍 **Advanced Link Verification**
 - Real-time link checking with robust error handling
 - Smart anchor text matching (exact and partial)

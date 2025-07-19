@@ -8,13 +8,26 @@
 
 1. **GitHub Account** with this repository
 2. **Vercel Account** (free tier available)
-3. **Environment Variables** (optional but recommended)
+3. **Admin Credentials** for secure access
+4. **Environment Variables** (optional but recommended)
+
+## 🔐 Authentication
+
+**Default Login Credentials:**
+- **Username**: `admin`
+- **Password**: `3*jcx3EI@UR9`
+
+⚠️ **Important**: Change these credentials in production by modifying `auth.js`
 
 ## 🔧 Environment Variables
 
 For full functionality, set these environment variables in Vercel:
 
 ```bash
+# Authentication (Optional - for custom credentials)
+ADMIN_USERNAME=your_custom_username
+ADMIN_PASSWORD=your_secure_password
+
 # GitHub Integration (Optional)
 GITHUB_TOKEN=your_github_personal_access_token
 GITHUB_OWNER=your_github_username
@@ -71,6 +84,7 @@ npm start
 
 ## 📚 Features
 
+- ✅ **Secure Authentication** - Login required for all access
 - ✅ CSV upload/download with template
 - ✅ Real-time link verification 
 - ✅ Cross-page selection and bulk operations
@@ -78,6 +92,8 @@ npm start
 - ✅ GitHub integration
 - ✅ Dark theme responsive UI
 - ✅ Comprehensive error handling
+- ✅ Session management with auto-logout
+- ✅ Logout functionality
 
 ## 🔗 Live Demo
 
