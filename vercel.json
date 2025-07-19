@@ -4,12 +4,26 @@
     {
       "src": "backlink-manager/server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "backlink-manager/api/cron/check-links.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/api/cron/check-links",
+      "dest": "backlink-manager/api/cron/check-links.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "backlink-manager/server.js"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/check-links",
+      "schedule": "0 2 * * *"
     }
   ]
 }

@@ -780,6 +780,36 @@ app.post('/api/github/configure', auth.requireAuth, (req, res) => {
     });
 });
 
+// Manual trigger for cron job (for testing)
+app.post('/api/cron/trigger', auth.requireAuth, async (req, res) => {
+    try {
+        console.log('Manual cron trigger initiated...');
+        
+        // In Vercel, this would call the cron function
+        if (process.env.VERCEL) {
+            res.json({
+                success: true,
+                message: 'On Vercel, cron jobs run automatically. Check Vercel dashboard for cron logs.',
+                note: 'Cron job scheduled for daily at 2 AM UTC'
+            });
+        } else {
+            // For local/VPS, run the check directly
+            autoCheckLinks();
+            res.json({
+                success: true,
+                message: 'Link checking initiated in background',
+                note: 'Check server logs for progress'
+            });
+        }
+    } catch (error) {
+        console.error('Manual cron trigger error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Automatic link checking every 24 hours
 async function autoCheckLinks() {
     console.log('Starting automatic link check...');
@@ -810,11 +840,15 @@ async function autoCheckLinks() {
     });
 }
 
-// Schedule automatic checks every 24 hours
-setInterval(autoCheckLinks, 24 * 60 * 60 * 1000);
-
-// Run initial check after 5 minutes
-setTimeout(autoCheckLinks, 5 * 60 * 1000);
+// Schedule automatic checks every 24 hours (only for non-Vercel environments)
+if (!process.env.VERCEL && !process.env.RAILWAY && !process.env.RENDER) {
+    setInterval(autoCheckLinks, 24 * 60 * 60 * 1000);
+    // Run initial check after 5 minutes
+    setTimeout(autoCheckLinks, 5 * 60 * 1000);
+    console.log('Local automatic link checking scheduled (every 24 hours)');
+} else {
+    console.log('Serverless environment detected - link checking will use cron jobs');
+}
 
 // Export app for Vercel
 module.exports = app;

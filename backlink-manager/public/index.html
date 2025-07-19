@@ -108,6 +108,7 @@
             <button id="uploadCSV" class="btn-secondary"><i class="fas fa-upload"></i> Upload CSV</button>
             <button id="downloadTemplate" class="btn-secondary"><i class="fas fa-download"></i> Download Template</button>
             <button id="checkLinks"><i class="fas fa-sync-alt"></i> Check All Links</button>
+            <button id="triggerCron" class="btn-secondary"><i class="fas fa-clock"></i> Trigger Scheduled Check</button>
             <button id="exportReport" class="btn-secondary"><i class="fas fa-file-csv"></i> Export CSV</button>
             <button id="generateReports" class="btn-secondary"><i class="fas fa-file-alt"></i> Generate Reports</button>
             <button id="uploadGitHub" class="btn-secondary"><i class="fab fa-github"></i> Upload to GitHub</button>
@@ -503,6 +504,41 @@
             } catch (error) {
                 console.error('Error checking links:', error);
                 alert('Error checking links');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // Trigger scheduled check (cron job)
+        document.getElementById('triggerCron').addEventListener('click', async () => {
+            const btn = document.getElementById('triggerCron');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Triggering...';
+            btn.disabled = true;
+            
+            try {
+                const response = await authenticatedFetch('/api/cron/trigger', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message + (result.note ? '\n\nNote: ' + result.note : ''));
+                    if (!result.message.includes('Vercel')) {
+                        // For non-Vercel, refresh data after a delay
+                        setTimeout(() => {
+                            loadBacklinks(currentPage);
+                            loadStats();
+                        }, 3000);
+                    }
+                } else {
+                    alert('Error triggering scheduled check: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error triggering cron:', error);
+                alert('Error triggering scheduled check');
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
