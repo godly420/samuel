@@ -2,22 +2,22 @@
   "version": 2,
   "builds": [
     {
-      "src": "backlink-manager/server.js",
+      "src": "server.js",
       "use": "@vercel/node"
     },
     {
-      "src": "backlink-manager/api/cron/check-links.js",
+      "src": "api/cron/check-links.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/cron/check-links",
-      "dest": "backlink-manager/api/cron/check-links.js"
+      "dest": "api/cron/check-links.js"
     },
     {
       "src": "/(.*)",
-      "dest": "backlink-manager/server.js"
+      "dest": "server.js"
     }
   ],
   "crons": [
