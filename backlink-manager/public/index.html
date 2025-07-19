@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backlink Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f; color: #e0e0e0; line-height: 1.6; 
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        header { 
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            color: white; padding: 40px; border-radius: 20px; margin-bottom: 40px;
+        }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .stat-card { 
+            background: #1f1f1f; padding: 30px; border-radius: 15px; text-align: center;
+            border: 1px solid #2a2a2a; transition: transform 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-number { font-size: 3em; font-weight: bold; color: #818cf8; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        
+        .actions { display: flex; gap: 15px; margin-bottom: 30px; justify-content: center; flex-wrap: wrap; }
+        button { 
+            padding: 12px 24px; background: #818cf8; color: white; border: none;
+            border-radius: 8px; cursor: pointer; font-size: 16px; transition: all 0.3s ease;
+        }
+        button:hover { background: #6366f1; transform: translateY(-2px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-secondary { background: #10b981; }
+        .btn-secondary:hover { background: #059669; }
+        
+        .table-container { 
+            background: #1f1f1f; border-radius: 15px; overflow: hidden;
+            margin-bottom: 30px; border: 1px solid #2a2a2a;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #2a2a2a; }
+        th { background: #1a1a1a; color: #a0a0a0; text-transform: uppercase; font-size: 0.85em; }
+        tbody tr:hover { background: #2a2a2a; }
+        
+        .status-badge { 
+            display: inline-block; padding: 6px 12px; border-radius: 20px;
+            font-size: 0.85em; font-weight: 500; text-transform: uppercase;
+        }
+        .status-live { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid #10b981; }
+        .status-error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
+        .status-pending { background: rgba(107, 114, 128, 0.1); color: #6b7280; border: 1px solid #6b7280; }
+        .link-found-yes { color: #10b981; font-weight: bold; }
+        .link-found-no { color: #ef4444; font-weight: bold; }
+        
+        .pagination { 
+            display: flex; justify-content: center; gap: 10px; margin-top: 30px;
+        }
+        .pagination button { 
+            padding: 10px 15px; background: #1f1f1f; color: #818cf8; border: 2px solid #818cf8;
+        }
+        .pagination button:hover { background: #818cf8; color: white; }
+        .pagination button.active { background: #818cf8; color: white; }
+        
+        a { color: #818cf8; text-decoration: none; }
+        a:hover { color: #6366f1; text-decoration: underline; }
+        .context { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        .dropdown-content button:hover { background: #2a2a2a !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-link"></i> Backlink Manager</h1>
+            <p>Monitor and manage your backlinks efficiently</p>
+        </header>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <h3>Total Links</h3>
+                <p class="stat-number" id="totalLinks">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Live Links</h3>
+                <p class="stat-number success" id="liveLinks">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Links Found</h3>
+                <p class="stat-number success" id="linksFound">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Errors</h3>
+                <p class="stat-number error" id="errorLinks">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Pending</h3>
+                <p class="stat-number warning" id="pendingLinks">0</p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button id="uploadCSV" class="btn-secondary"><i class="fas fa-upload"></i> Upload CSV</button>
+            <button id="downloadTemplate" class="btn-secondary"><i class="fas fa-download"></i> Download Template</button>
+            <button id="checkLinks"><i class="fas fa-sync-alt"></i> Check All Links</button>
+            <button id="exportReport" class="btn-secondary"><i class="fas fa-file-csv"></i> Export CSV</button>
+            <button id="generateReports" class="btn-secondary"><i class="fas fa-file-alt"></i> Generate Reports</button>
+            <button id="uploadGitHub" class="btn-secondary"><i class="fab fa-github"></i> Upload to GitHub</button>
+            <button id="refreshData" class="btn-secondary"><i class="fas fa-redo"></i> Refresh Data</button>
+            <button id="deleteSelected" class="btn-danger" disabled><i class="fas fa-trash"></i> Delete Selected</button>
+            <button id="deleteAll" class="btn-danger"><i class="fas fa-trash-alt"></i> Delete All</button>
+        </div>
+
+        <!-- Hidden file input for CSV upload -->
+        <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" id="selectAll">
+                                <div class="dropdown" style="position: relative;">
+                                    <button class="dropdown-btn" style="background: none; border: none; color: inherit; cursor: pointer; font-size: 12px;">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <div class="dropdown-content" style="display: none; position: absolute; background: #1f1f1f; border: 1px solid #2a2a2a; border-radius: 5px; z-index: 1000; min-width: 150px; top: 100%; left: 0;">
+                                        <button id="selectAllPages" style="width: 100%; padding: 8px; background: none; border: none; color: inherit; text-align: left; cursor: pointer; transition: background 0.2s;">Select All Pages</button>
+                                        <button id="selectCurrentPage" style="width: 100%; padding: 8px; background: none; border: none; color: inherit; text-align: left; cursor: pointer; transition: background 0.2s;">Select Current Page</button>
+                                        <button id="selectNone" style="width: 100%; padding: 8px; background: none; border: none; color: inherit; text-align: left; cursor: pointer; transition: background 0.2s;">Select None</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>Live Link</th>
+                        <th>Target URL</th>
+                        <th>Target Anchor</th>
+                        <th>Status</th>
+                        <th>Link Found</th>
+                        <th>HTTP Status</th>
+                        <th>Context</th>
+                        <th>Last Checked</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="backlinksBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let selectedRows = new Set();
+        let allSelectedRows = new Set(); // Track selections across all pages
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                console.log('Stats loaded:', stats);
+                
+                document.getElementById('totalLinks').textContent = stats.total || 0;
+                document.getElementById('liveLinks').textContent = stats.live_count || 0;
+                document.getElementById('linksFound').textContent = stats.links_found || 0;
+                document.getElementById('errorLinks').textContent = stats.error_count || 0;
+                document.getElementById('pendingLinks').textContent = stats.pending_count || 0;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadBacklinks(page = 1) {
+            try {
+                console.log(`Loading page ${page}`);
+                const response = await fetch(`/api/backlinks?page=${page}&limit=10`);
+                const data = await response.json();
+                
+                console.log(`Loaded data:`, data);
+                
+                displayBacklinks(data.backlinks);
+                displayPagination(data.page, data.totalPages);
+                currentPage = page;
+                
+                selectedRows.clear();
+                updateSelectionUI();
+            } catch (error) {
+                console.error('Error loading backlinks:', error);
+            }
+        }
+
+        function displayBacklinks(backlinks) {
+            console.log(`Displaying ${backlinks.length} backlinks`);
+            const tbody = document.getElementById('backlinksBody');
+            tbody.innerHTML = '';
+            
+            backlinks.forEach(backlink => {
+                const row = document.createElement('tr');
+                const linkFound = (backlink.link_found === 1 || backlink.link_found === true);
+                const isSelected = allSelectedRows.has(backlink.id);
+                
+                row.innerHTML = `
+                    <td><input type="checkbox" class="row-checkbox" data-id="${backlink.id}" ${isSelected ? 'checked' : ''}></td>
+                    <td><a href="${backlink.live_link}" target="_blank">${truncateUrl(backlink.live_link)}</a></td>
+                    <td><a href="${backlink.target_url}" target="_blank">${truncateUrl(backlink.target_url)}</a></td>
+                    <td>${backlink.target_anchor}</td>
+                    <td><span class="status-badge status-${backlink.status}">${backlink.status}</span></td>
+                    <td><span class="link-found-${linkFound ? 'yes' : 'no'}">${linkFound ? 'Yes' : 'No'}</span></td>
+                    <td>${backlink.http_status || 'N/A'}</td>
+                    <td class="context" title="${backlink.link_context || ''}">${truncateText(backlink.link_context, 50)}</td>
+                    <td>${formatDate(backlink.last_checked)}</td>
+                    <td>${formatDate(backlink.created_at)}</td>
+                    <td><button class="btn-danger" onclick="deleteBacklink(${backlink.id})"><i class="fas fa-trash"></i></button></td>
+                `;
+                tbody.appendChild(row);
+                
+                // Update selectedRows for current page if item was already selected
+                if (isSelected) {
+                    selectedRows.add(backlink.id);
+                }
+            });
+            
+            // Add checkbox listeners
+            document.querySelectorAll('.row-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    if (e.target.checked) {
+                        selectedRows.add(id);
+                        allSelectedRows.add(id);
+                    } else {
+                        selectedRows.delete(id);
+                        allSelectedRows.delete(id);
+                    }
+                    updateSelectionUI();
+                });
+            });
+        }
+
+        function displayPagination(currentPage, totalPages) {
+            console.log(`Pagination: page ${currentPage} of ${totalPages}`);
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            if (totalPages <= 1) return;
+            
+            // Previous
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Previous';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => loadBacklinks(currentPage - 1);
+            pagination.appendChild(prevBtn);
+            
+            // Pages
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.className = i === currentPage ? 'active' : '';
+                pageBtn.onclick = () => loadBacklinks(i);
+                pagination.appendChild(pageBtn);
+            }
+            
+            // Next
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => loadBacklinks(currentPage + 1);
+            pagination.appendChild(nextBtn);
+        }
+
+        function truncateUrl(url) {
+            return url && url.length > 40 ? url.substring(0, 40) + '...' : url || '';
+        }
+
+        function truncateText(text, maxLength) {
+            if (!text) return 'N/A';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            } catch (error) {
+                return 'Invalid Date';
+            }
+        }
+
+        function updateSelectionUI() {
+            const selectedCount = selectedRows.size;
+            const totalSelectedCount = allSelectedRows.size;
+            const deleteButton = document.getElementById('deleteSelected');
+            
+            deleteButton.disabled = totalSelectedCount === 0;
+            if (totalSelectedCount > selectedCount) {
+                deleteButton.innerHTML = `<i class="fas fa-trash"></i> Delete Selected (${totalSelectedCount})`;
+            } else {
+                deleteButton.innerHTML = `<i class="fas fa-trash"></i> Delete Selected`;
+            }
+            
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            
+            if (selectedCount === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (selectedCount === checkboxes.length) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+
+        async function deleteBacklink(id) {
+            if (!confirm('Are you sure you want to delete this backlink?')) return;
+            
+            try {
+                await fetch(`/api/backlinks/${id}`, { method: 'DELETE' });
+                loadBacklinks(currentPage);
+                loadStats();
+                selectedRows.delete(id);
+                updateSelectionUI();
+            } catch (error) {
+                console.error('Error deleting backlink:', error);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('selectAll').addEventListener('change', (e) => {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = e.target.checked;
+                const id = parseInt(checkbox.dataset.id);
+                if (e.target.checked) {
+                    selectedRows.add(id);
+                    allSelectedRows.add(id);
+                } else {
+                    selectedRows.delete(id);
+                    allSelectedRows.delete(id);
+                }
+            });
+            updateSelectionUI();
+        });
+
+        document.getElementById('deleteSelected').addEventListener('click', async () => {
+            // Use allSelectedRows if it has items, otherwise fall back to selectedRows
+            const rowsToDelete = allSelectedRows.size > 0 ? allSelectedRows : selectedRows;
+            
+            if (rowsToDelete.size === 0) return;
+            
+            if (!confirm(`Delete ${rowsToDelete.size} selected backlinks?`)) return;
+            
+            try {
+                const response = await fetch('/api/backlinks/bulk-delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: Array.from(rowsToDelete) })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    selectedRows.clear();
+                    allSelectedRows.clear();
+                    updateSelectionUI();
+                    loadBacklinks(currentPage);
+                    loadStats();
+                    alert(`Deleted ${result.deleted} backlinks`);
+                }
+            } catch (error) {
+                console.error('Error bulk deleting:', error);
+            }
+        });
+
+        document.getElementById('checkLinks').addEventListener('click', async () => {
+            const btn = document.getElementById('checkLinks');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking All Links...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/check-links', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ forceAll: true })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`Checked ${result.processed} links successfully! ${result.errors || 0} errors found.`);
+                    loadBacklinks(currentPage);
+                    loadStats();
+                } else {
+                    alert('Error checking links: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error checking links:', error);
+                alert('Error checking links');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('exportReport').addEventListener('click', () => {
+            window.location.href = '/api/export';
+        });
+
+        document.getElementById('refreshData').addEventListener('click', () => {
+            loadBacklinks(currentPage);
+            loadStats();
+        });
+
+        // Upload CSV functionality
+        document.getElementById('uploadCSV').addEventListener('click', () => {
+            document.getElementById('csvFileInput').click();
+        });
+
+        document.getElementById('csvFileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                alert('Please select a CSV file');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('csvFile', file);
+
+            const uploadBtn = document.getElementById('uploadCSV');
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`Successfully uploaded ${data.count} backlinks!`);
+                    loadBacklinks(1);
+                    loadStats();
+                } else {
+                    alert(data.error || 'Failed to upload CSV');
+                }
+            } catch (error) {
+                console.error('Error uploading CSV:', error);
+                alert('Error uploading CSV file');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Upload CSV';
+                e.target.value = ''; // Clear the input
+            }
+        });
+
+        // Download template
+        document.getElementById('downloadTemplate').addEventListener('click', () => {
+            window.location.href = '/api/template';
+        });
+
+        // Generate reports
+        document.getElementById('generateReports').addEventListener('click', async () => {
+            const btn = document.getElementById('generateReports');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Reports...';
+
+            try {
+                const response = await fetch('/api/reports/generate');
+                const data = await response.json();
+
+                if (data.success) {
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                        background: rgba(0, 0, 0, 0.8); display: flex; align-items: center;
+                        justify-content: center; z-index: 1000;
+                    `;
+                    modal.innerHTML = `
+                        <div style="background: #1f1f1f; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%; border: 1px solid #2a2a2a;">
+                            <h2 style="margin-top: 0; color: #818cf8;">Reports Generated Successfully!</h2>
+                            <p style="color: #a0a0a0; margin-bottom: 20px;">Your reports are ready for download:</p>
+                            <div style="display: flex; gap: 15px; flex-direction: column;">
+                                <a href="/api/reports/excel/${data.files.excel}" download 
+                                   style="display: flex; align-items: center; gap: 10px; padding: 15px; background: #10b981; color: white; text-decoration: none; border-radius: 8px;">
+                                    <i class="fas fa-file-excel" style="font-size: 24px;"></i>
+                                    <div>
+                                        <div style="font-weight: bold;">Excel Report</div>
+                                        <div style="font-size: 0.9em; opacity: 0.8;">Detailed spreadsheet</div>
+                                    </div>
+                                </a>
+                                <a href="/api/reports/pdf/${data.files.pdf}" download 
+                                   style="display: flex; align-items: center; gap: 10px; padding: 15px; background: #3b82f6; color: white; text-decoration: none; border-radius: 8px;">
+                                    <i class="fas fa-file-pdf" style="font-size: 24px;"></i>
+                                    <div>
+                                        <div style="font-weight: bold;">PDF/HTML Report</div>
+                                        <div style="font-size: 0.9em; opacity: 0.8;">Printable summary</div>
+                                    </div>
+                                </a>
+                            </div>
+                            <button onclick="this.parentElement.parentElement.remove()" 
+                                    style="margin-top: 20px; padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer; width: 100%;">
+                                Close
+                            </button>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) modal.remove();
+                    });
+                } else {
+                    alert('Failed to generate reports');
+                }
+            } catch (error) {
+                console.error('Error generating reports:', error);
+                alert('Error generating reports');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-file-alt"></i> Generate Reports';
+            }
+        });
+
+        // Upload to GitHub
+        document.getElementById('uploadGitHub').addEventListener('click', async () => {
+            const btn = document.getElementById('uploadGitHub');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to GitHub...';
+
+            try {
+                const response = await fetch('/api/github/upload', { method: 'POST' });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Reports uploaded to GitHub successfully!');
+                } else {
+                    alert(data.error || 'Failed to upload to GitHub');
+                }
+            } catch (error) {
+                console.error('Error uploading to GitHub:', error);
+                alert('Error uploading to GitHub');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fab fa-github"></i> Upload to GitHub';
+            }
+        });
+
+        // Delete All
+        document.getElementById('deleteAll').addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to delete ALL backlinks? This action cannot be undone.')) {
+                return;
+            }
+
+            const btn = document.getElementById('deleteAll');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+            try {
+                const response = await fetch('/api/backlinks/delete-all', {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(`Successfully deleted ${data.deleted} backlinks`);
+                    selectedRows.clear();
+                    loadBacklinks(1);
+                    loadStats();
+                } else {
+                    alert('Failed to delete backlinks');
+                }
+            } catch (error) {
+                console.error('Error deleting all backlinks:', error);
+                alert('Error deleting backlinks');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash-alt"></i> Delete All';
+            }
+        });
+
+        // Dropdown functionality for cross-page selection
+        const selectAllDropdown = document.querySelector('.dropdown-content');
+        const dropdownBtn = document.querySelector('.dropdown-btn');
+        
+        if (dropdownBtn && selectAllDropdown) {
+            dropdownBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectAllDropdown.style.display = selectAllDropdown.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            document.addEventListener('click', () => {
+                selectAllDropdown.style.display = 'none';
+            });
+            
+            // Select All Pages
+            document.getElementById('selectAllPages').addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/api/backlinks/ids');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        allSelectedRows.clear();
+                        data.ids.forEach(id => allSelectedRows.add(id));
+                        
+                        // Update current page checkboxes
+                        const checkboxes = document.querySelectorAll('.row-checkbox');
+                        checkboxes.forEach(checkbox => {
+                            const id = parseInt(checkbox.dataset.id);
+                            checkbox.checked = allSelectedRows.has(id);
+                            if (checkbox.checked) {
+                                selectedRows.add(id);
+                            }
+                        });
+                        
+                        updateSelectionUI();
+                        alert(`Selected all ${data.ids.length} backlinks across all pages`);
+                    }
+                } catch (error) {
+                    console.error('Error selecting all pages:', error);
+                    alert('Error selecting all pages');
+                }
+                selectAllDropdown.style.display = 'none';
+            });
+            
+            // Select Current Page
+            document.getElementById('selectCurrentPage').addEventListener('click', () => {
+                const checkboxes = document.querySelectorAll('.row-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                    const id = parseInt(checkbox.dataset.id);
+                    selectedRows.add(id);
+                    allSelectedRows.add(id);
+                });
+                updateSelectionUI();
+                selectAllDropdown.style.display = 'none';
+            });
+            
+            // Select None
+            document.getElementById('selectNone').addEventListener('click', () => {
+                const checkboxes = document.querySelectorAll('.row-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    const id = parseInt(checkbox.dataset.id);
+                    selectedRows.delete(id);
+                    allSelectedRows.delete(id);
+                });
+                document.getElementById('selectAll').checked = false;
+                updateSelectionUI();
+                selectAllDropdown.style.display = 'none';
+            });
+        }
+
+        // Make deleteBacklink global
+        window.deleteBacklink = deleteBacklink;
+
+        // Initialize
+        console.log('Initializing...');
+        loadStats();
+        loadBacklinks(1);
+    </script>
+    
+    <!-- External script disabled to prevent conflicts with embedded handlers -->
+    <!-- <script src="script.js"></script> -->
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backlink Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f; color: #e0e0e0; line-height: 1.6; 
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        header { 
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            color: white; padding: 40px; border-radius: 20px; margin-bottom: 40px;
+        }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .stat-card { 
+            background: #1f1f1f; padding: 30px; border-radius: 15px; text-align: center;
+            border: 1px solid #2a2a2a; transition: transform 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-number { font-size: 3em; font-weight: bold; color: #818cf8; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        
+        .actions { display: flex; gap: 15px; margin-bottom: 30px; justify-content: center; flex-wrap: wrap; }
+        button { 
+            padding: 12px 24px; background: #818cf8; color: white; border: none;
+            border-radius: 8px; cursor: pointer; font-size: 16px; transition: all 0.3s ease;
+        }
+        button:hover { background: #6366f1; transform: translateY(-2px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-secondary { background: #10b981; }
+        .btn-secondary:hover { background: #059669; }
+        
+        .table-container { 
+            background: #1f1f1f; border-radius: 15px; overflow: hidden;
+            margin-bottom: 30px; border: 1px solid #2a2a2a;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #2a2a2a; }
+        th { background: #1a1a1a; color: #a0a0a0; text-transform: uppercase; font-size: 0.85em; }
+        tbody tr:hover { background: #2a2a2a; }
+        
+        .status-badge { 
+            display: inline-block; padding: 6px 12px; border-radius: 20px;
+            font-size: 0.85em; font-weight: 500; text-transform: uppercase;
+        }
+        .status-live { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid #10b981; }
+        .status-error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
+        .status-pending { background: rgba(107, 114, 128, 0.1); color: #6b7280; border: 1px solid #6b7280; }
+        .link-found-yes { color: #10b981; font-weight: bold; }
+        .link-found-no { color: #ef4444; font-weight: bold; }
+        
+        .pagination { 
+            display: flex; justify-content: center; gap: 10px; margin-top: 30px;
+        }
+        .pagination button { 
+            padding: 10px 15px; background: #1f1f1f; color: #818cf8; border: 2px solid #818cf8;
+        }
+        .pagination button:hover { background: #818cf8; color: white; }
+        .pagination button.active { background: #818cf8; color: white; }
+        
+        a { color: #818cf8; text-decoration: none; }
+        a:hover { color: #6366f1; text-decoration: underline; }
+        .context { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-link"></i> Backlink Manager</h1>
+            <p>Monitor and manage your backlinks efficiently</p>
+        </header>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <h3>Total Links</h3>
+                <p class="stat-number" id="totalLinks">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Live Links</h3>
+                <p class="stat-number success" id="liveLinks">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Links Found</h3>
+                <p class="stat-number success" id="linksFound">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Errors</h3>
+                <p class="stat-number error" id="errorLinks">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Pending</h3>
+                <p class="stat-number warning" id="pendingLinks">0</p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button id="checkLinks"><i class="fas fa-sync-alt"></i> Check All Links</button>
+            <button id="exportReport" class="btn-secondary"><i class="fas fa-file-export"></i> Export Report</button>
+            <button id="refreshData" class="btn-secondary"><i class="fas fa-redo"></i> Refresh Data</button>
+            <button id="deleteSelected" class="btn-danger" disabled><i class="fas fa-trash"></i> Delete Selected</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Live Link</th>
+                        <th>Target URL</th>
+                        <th>Target Anchor</th>
+                        <th>Status</th>
+                        <th>Link Found</th>
+                        <th>HTTP Status</th>
+                        <th>Context</th>
+                        <th>Last Checked</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="backlinksBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let selectedRows = new Set();
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                console.log('Stats loaded:', stats);
+                
+                document.getElementById('totalLinks').textContent = stats.total || 0;
+                document.getElementById('liveLinks').textContent = stats.live_count || 0;
+                document.getElementById('linksFound').textContent = stats.links_found || 0;
+                document.getElementById('errorLinks').textContent = stats.error_count || 0;
+                document.getElementById('pendingLinks').textContent = stats.pending_count || 0;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadBacklinks(page = 1) {
+            try {
+                console.log(`Loading page ${page}`);
+                const response = await fetch(`/api/backlinks?page=${page}&limit=10`);
+                const data = await response.json();
+                
+                console.log(`Loaded data:`, data);
+                
+                displayBacklinks(data.backlinks);
+                displayPagination(data.page, data.totalPages);
+                currentPage = page;
+                
+                selectedRows.clear();
+                updateSelectionUI();
+            } catch (error) {
+                console.error('Error loading backlinks:', error);
+            }
+        }
+
+        function displayBacklinks(backlinks) {
+            console.log(`Displaying ${backlinks.length} backlinks`);
+            const tbody = document.getElementById('backlinksBody');
+            tbody.innerHTML = '';
+            
+            backlinks.forEach(backlink => {
+                const row = document.createElement('tr');
+                const linkFound = (backlink.link_found === 1 || backlink.link_found === true);
+                
+                row.innerHTML = `
+                    <td><input type="checkbox" class="row-checkbox" data-id="${backlink.id}"></td>
+                    <td><a href="${backlink.live_link}" target="_blank">${truncateUrl(backlink.live_link)}</a></td>
+                    <td><a href="${backlink.target_url}" target="_blank">${truncateUrl(backlink.target_url)}</a></td>
+                    <td>${backlink.target_anchor}</td>
+                    <td><span class="status-badge status-${backlink.status}">${backlink.status}</span></td>
+                    <td><span class="link-found-${linkFound ? 'yes' : 'no'}">${linkFound ? 'Yes' : 'No'}</span></td>
+                    <td>${backlink.http_status || 'N/A'}</td>
+                    <td class="context" title="${backlink.link_context || ''}">${truncateText(backlink.link_context, 50)}</td>
+                    <td>${formatDate(backlink.last_checked)}</td>
+                    <td><button class="btn-danger" onclick="deleteBacklink(${backlink.id})"><i class="fas fa-trash"></i></button></td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Add checkbox listeners
+            document.querySelectorAll('.row-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    if (e.target.checked) {
+                        selectedRows.add(id);
+                    } else {
+                        selectedRows.delete(id);
+                    }
+                    updateSelectionUI();
+                });
+            });
+        }
+
+        function displayPagination(currentPage, totalPages) {
+            console.log(`Pagination: page ${currentPage} of ${totalPages}`);
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            if (totalPages <= 1) return;
+            
+            // Previous
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Previous';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => loadBacklinks(currentPage - 1);
+            pagination.appendChild(prevBtn);
+            
+            // Pages
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.className = i === currentPage ? 'active' : '';
+                pageBtn.onclick = () => loadBacklinks(i);
+                pagination.appendChild(pageBtn);
+            }
+            
+            // Next
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => loadBacklinks(currentPage + 1);
+            pagination.appendChild(nextBtn);
+        }
+
+        function truncateUrl(url) {
+            return url && url.length > 40 ? url.substring(0, 40) + '...' : url || '';
+        }
+
+        function truncateText(text, maxLength) {
+            if (!text) return 'N/A';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            } catch (error) {
+                return 'Invalid Date';
+            }
+        }
+
+        function updateSelectionUI() {
+            const selectedCount = selectedRows.size;
+            document.getElementById('deleteSelected').disabled = selectedCount === 0;
+            
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            
+            if (selectedCount === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (selectedCount === checkboxes.length) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+
+        async function deleteBacklink(id) {
+            if (!confirm('Are you sure you want to delete this backlink?')) return;
+            
+            try {
+                await fetch(`/api/backlinks/${id}`, { method: 'DELETE' });
+                loadBacklinks(currentPage);
+                loadStats();
+                selectedRows.delete(id);
+                updateSelectionUI();
+            } catch (error) {
+                console.error('Error deleting backlink:', error);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('selectAll').addEventListener('change', (e) => {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = e.target.checked;
+                const id = parseInt(checkbox.dataset.id);
+                if (e.target.checked) {
+                    selectedRows.add(id);
+                } else {
+                    selectedRows.delete(id);
+                }
+            });
+            updateSelectionUI();
+        });
+
+        document.getElementById('deleteSelected').addEventListener('click', async () => {
+            if (selectedRows.size === 0) return;
+            
+            if (!confirm(`Delete ${selectedRows.size} selected backlinks?`)) return;
+            
+            try {
+                const response = await fetch('/api/backlinks/bulk-delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: Array.from(selectedRows) })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    selectedRows.clear();
+                    updateSelectionUI();
+                    loadBacklinks(currentPage);
+                    loadStats();
+                    alert(`Deleted ${result.deleted} backlinks`);
+                }
+            } catch (error) {
+                console.error('Error bulk deleting:', error);
+            }
+        });
+
+        document.getElementById('checkLinks').addEventListener('click', async () => {
+            const btn = document.getElementById('checkLinks');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/check-links', { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`Checked ${result.processed} links!`);
+                    loadBacklinks(currentPage);
+                    loadStats();
+                }
+            } catch (error) {
+                alert('Error checking links');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('exportReport').addEventListener('click', () => {
+            window.location.href = '/api/export';
+        });
+
+        document.getElementById('refreshData').addEventListener('click', () => {
+            loadBacklinks(currentPage);
+            loadStats();
+        });
+
+        // Make deleteBacklink global
+        window.deleteBacklink = deleteBacklink;
+
+        // Initialize
+        console.log('Initializing...');
+        loadStats();
+        loadBacklinks(1);
+    </script>
+</body>
+</html>
