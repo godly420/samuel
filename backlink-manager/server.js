@@ -180,16 +180,14 @@ app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Serve static files (CSS, JS, but not HTML files to maintain auth control)
-app.use(express.static('public', { 
-    index: false,
-    setHeaders: (res, path) => {
-        // Don't serve HTML files through static middleware
-        if (path.endsWith('.html')) {
-            res.status(404).end();
-        }
+// Serve static files (CSS, JS, images only - no HTML files to maintain auth control)
+app.use((req, res, next) => {
+    // Block serving HTML files through static middleware
+    if (req.path.endsWith('.html') || req.path === '/') {
+        return next(); // Skip static middleware for HTML files
     }
-}));
+    express.static('public', { index: false })(req, res, next);
+});
 
 app.post('/api/upload', auth.requireAuth, upload.single('csvFile'), (req, res) => {
     if (!req.file) {
