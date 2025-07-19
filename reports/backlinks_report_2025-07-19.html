@@ -1,0 +1,610 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Backlinks Report</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                    color: #333;
+                }
+                h1, h2 {
+                    color: #2c3e50;
+                }
+                .summary {
+                    background: #f8f9fa;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin-bottom: 30px;
+                }
+                .stat-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 15px;
+                    margin-top: 20px;
+                }
+                .stat-box {
+                    background: white;
+                    padding: 15px;
+                    border-radius: 5px;
+                    border: 1px solid #ddd;
+                }
+                .stat-value {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #3498db;
+                }
+                .stat-label {
+                    color: #7f8c8d;
+                    font-size: 14px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                    font-size: 12px;
+                }
+                th, td {
+                    padding: 8px;
+                    text-align: left;
+                    border-bottom: 1px solid #ddd;
+                }
+                th {
+                    background-color: #3498db;
+                    color: white;
+                }
+                tr:nth-child(even) {
+                    background-color: #f2f2f2;
+                }
+                .status-live { color: green; }
+                .status-error { color: red; }
+                .status-unreachable { color: orange; }
+                .link-found { color: green; font-weight: bold; }
+                .link-not-found { color: red; font-weight: bold; }
+                .page-break { page-break-after: always; }
+                .timestamp {
+                    text-align: right;
+                    color: #7f8c8d;
+                    font-size: 12px;
+                    margin-bottom: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>Backlinks Report</h1>
+            <div class="timestamp">Generated on: 7/19/2025, 8:21:36 PM</div>
+            
+            <div class="summary">
+                <h2>Summary Statistics</h2>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <div class="stat-value">48</div>
+                        <div class="stat-label">Total Backlinks</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">37</div>
+                        <div class="stat-label">Links Found (77.1%)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">39</div>
+                        <div class="stat-label">Live Pages</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">9</div>
+                        <div class="stat-label">Errors</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">5</div>
+                        <div class="stat-label">404 Errors</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">30</div>
+                        <div class="stat-label">Exact Anchor Matches</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="page-break"></div>
+            
+            <h2>Detailed Backlinks Report</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Live Link</th>
+                        <th>Target URL</th>
+                        <th>Anchor</th>
+                        <th>Status</th>
+                        <th>Link Found</th>
+                        <th>HTTP</th>
+                        <th>Last Checked</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                        <tr>
+                            <td>https://example.com/blog/post1</td>
+                            <td>https://mysite.com</td>
+                            <td>My Site</td>
+                            <td class="status-error">error</td>
+                            <td class="link-not-found">No</td>
+                            <td>404</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://example.com/resources</td>
+                            <td>https://mysite.com/products</td>
+                            <td>Our Products</td>
+                            <td class="status-error">error</td>
+                            <td class="link-not-found">No</td>
+                            <td>404</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://example.com/partners</td>
+                            <td>https://mysite.com/services</td>
+                            <td>Professional Services</td>
+                            <td class="status-error">error</td>
+                            <td class="link-not-found">No</td>
+                            <td>404</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://example.com/test1</td>
+                            <td>https://testsite.com</td>
+                            <td>Test Site 1</td>
+                            <td class="status-error">error</td>
+                            <td class="link-not-found">No</td>
+                            <td>404</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://example.com/test2</td>
+                            <td>https://testsite.com</td>
+                            <td>Test Site 2</td>
+                            <td class="status-error">error</td>
+                            <td class="link-not-found">No</td>
+                            <td>404</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://www.openflightmaps.org/2021/06/17/the-rise...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King sports betting</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://dropsmobile.com/finest-casino-online-best-...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>MenaceKing.com casino and betting site</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://create.twu.ca/deep2502/2020/06/17/discover...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King casino and sportbook</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://tardis.nmmu.ac.za/ironman2013/?p=2518</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king casino</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://insna.info/experience-real-casino-excitemen...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king betting</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://djakuaa.com/2025/04/30/discover-the-most-e...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://biennialdigitalreport.cdri.world/2020/06/1...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://la-dory.com/best-commission-casinos-2025-th...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://nj.zoa.org/2025/06/17/spin-to-win-your-ult...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>MenaceKing</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://vipper.com/aviatorplay-online-legit-way-to...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>MenaceKing</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://shwptraining43.registeredsite.com/online-ca...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king</td>
+                            <td class="status-error">error</td>
+                            <td class="link-not-found">No</td>
+                            <td>403</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://tracyhayman.solutionsgram.com/the-evolutio...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://www.leerebelwriters.com/is-online-gambling...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://vpmovers.bcz.com/2020/06/16/discover-mobil...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>MenaceKing</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://climateaistage.wpenginepowered.com/blog/di...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King casino</td>
+                            <td class="status-error">error</td>
+                            <td class="link-not-found">No</td>
+                            <td>403</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://hoteljules.com/top-betting-sites-your-ulti...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King online casino</td>
+                            <td class="status-live">live</td>
+                            <td class="link-not-found">No</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://www.openflightmaps.org/2021/06/17/the-rise...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King sports betting</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://dropsmobile.com/finest-casino-online-best-...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>MenaceKing.com casino and betting site</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://create.twu.ca/deep2502/2020/06/17/discover...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King casino and sportbook</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://tardis.nmmu.ac.za/ironman2013/?p=2518</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king casino</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://insna.info/experience-real-casino-excitemen...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king betting</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://djakuaa.com/2025/04/30/discover-the-most-e...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://biennialdigitalreport.cdri.world/2020/06/1...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://la-dory.com/best-commission-casinos-2025-th...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://nj.zoa.org/2025/06/17/spin-to-win-your-ult...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>MenaceKing</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://buying.com/buyingtoken/2020/06/16/the-ulti...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king betting</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://ixd.uqcloud.net/essential-tips-on-how-to-ch...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://shwptraining43.registeredsite.com/online-ca...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king</td>
+                            <td class="status-error">error</td>
+                            <td class="link-not-found">No</td>
+                            <td>403</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://tracyhayman.solutionsgram.com/the-evolutio...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://www.leerebelwriters.com/is-online-gambling...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://vpmovers.bcz.com/2020/06/16/discover-mobil...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>MenaceKing</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://climateaistage.wpenginepowered.com/blog/di...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King casino</td>
+                            <td class="status-error">error</td>
+                            <td class="link-not-found">No</td>
+                            <td>403</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://hoteljules.com/top-betting-sites-your-ulti...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King online casino</td>
+                            <td class="status-live">live</td>
+                            <td class="link-not-found">No</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://www.openflightmaps.org/2021/06/17/the-rise...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King sports betting</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://dropsmobile.com/finest-casino-online-best-...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>MenaceKing.com casino and betting site</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://create.twu.ca/deep2502/2020/06/17/discover...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King casino and sportbook</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://tardis.nmmu.ac.za/ironman2013/?p=2518</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king casino</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://insna.info/experience-real-casino-excitemen...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king betting</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://djakuaa.com/2025/04/30/discover-the-most-e...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>menace king</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://biennialdigitalreport.cdri.world/2020/06/1...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>http://la-dory.com/best-commission-casinos-2025-th...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>Menace King</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://nj.zoa.org/2025/06/17/spin-to-win-your-ult...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>MenaceKing</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                        <tr>
+                            <td>https://vipper.com/aviatorplay-online-legit-way-to...</td>
+                            <td>https://menaceking.com/</td>
+                            <td>MenaceKing</td>
+                            <td class="status-live">live</td>
+                            <td class="link-found">Yes</td>
+                            <td>200</td>
+                            <td>7/19/2025</td>
+                        </tr>
+                    
+                </tbody>
+            </table>
+        </body>
+        </html>
+        

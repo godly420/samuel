@@ -2,8 +2,6 @@
 
 A comprehensive, full-featured backlink management tool that monitors, verifies, and reports on backlinks automatically.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/godly420/samuel)
-
 ## Features
 
 ### 🔍 **Advanced Link Verification**

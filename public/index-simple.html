@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backlink Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="theme-switcher">
+        <button id="themeToggle" title="Switch Theme">
+            <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+        <div class="theme-dropdown" id="themeDropdown">
+            <button data-theme="dark"><i class="fas fa-moon"></i> Dark</button>
+            <button data-theme="light"><i class="fas fa-sun"></i> Light</button>
+            <button data-theme="midnight"><i class="fas fa-star"></i> Midnight</button>
+            <button data-theme="ocean"><i class="fas fa-water"></i> Ocean</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1><i class="fas fa-link"></i> Backlink Manager</h1>
+                <p>Monitor and manage your backlinks efficiently</p>
+            </div>
+            <div class="header-stats">
+                <div class="live-indicator">
+                    <span class="pulse"></span>
+                    <span>Auto-checking every 24 hours</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="stats-container" id="stats">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-link"></i></div>
+                <h3>Total Links</h3>
+                <p class="stat-number" id="totalLinks">0</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon success"><i class="fas fa-check-circle"></i></div>
+                <h3>Live Links</h3>
+                <p class="stat-number success" id="liveLinks">0</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon success"><i class="fas fa-search"></i></div>
+                <h3>Links Found</h3>
+                <p class="stat-number success" id="linksFound">0</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon error"><i class="fas fa-exclamation-triangle"></i></div>
+                <h3>Errors</h3>
+                <p class="stat-number error" id="errorLinks">0</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon warning"><i class="fas fa-clock"></i></div>
+                <h3>Pending</h3>
+                <p class="stat-number warning" id="pendingLinks">0</p>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-pie"></i> Link Status Distribution</h3>
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-line"></i> Success Rate</h3>
+                <canvas id="successChart"></canvas>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <h2><i class="fas fa-upload"></i> Upload CSV File</h2>
+            <p>CSV should contain columns: live_link, target_url, target_anchor</p>
+            <div class="format-download">
+                <a href="/api/template" class="download-template">
+                    <i class="fas fa-download"></i> Download CSV Template
+                </a>
+            </div>
+            <form id="uploadForm">
+                <div class="file-input-wrapper">
+                    <input type="file" id="csvFile" accept=".csv" required>
+                    <label for="csvFile" class="file-label">
+                        <i class="fas fa-file-csv"></i>
+                        <span>Choose CSV file or drag & drop</span>
+                    </label>
+                </div>
+                <button type="submit"><i class="fas fa-cloud-upload-alt"></i> Upload CSV</button>
+            </form>
+            <div id="uploadMessage" class="message"></div>
+        </div>
+
+        <div class="actions">
+            <button id="checkLinks" class="btn-primary"><i class="fas fa-sync-alt"></i> Check All Links</button>
+            <button id="exportReport" class="btn-secondary"><i class="fas fa-file-export"></i> Export Report</button>
+            <button id="refreshData" class="btn-secondary"><i class="fas fa-redo"></i> Refresh Data</button>
+            <button id="deleteSelected" class="btn-danger" disabled><i class="fas fa-trash"></i> Delete Selected</button>
+        </div>
+
+        <div class="filters">
+            <label>
+                Status:
+                <select id="statusFilter">
+                    <option value="">All</option>
+                    <option value="live">Live</option>
+                    <option value="error">Error</option>
+                    <option value="unreachable">Unreachable</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </label>
+            <label>
+                Link Found:
+                <select id="linkFoundFilter">
+                    <option value="">All</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <div class="table-controls">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="selectAll">
+                        <span class="checkmark"></span>
+                        Select All
+                    </label>
+                    <span id="selectedCount" class="selected-count">0 selected</span>
+                </div>
+            </div>
+            <table id="backlinksTable">
+                <thead>
+                    <tr>
+                        <th width="40px"></th>
+                        <th>Live Link</th>
+                        <th>Target URL</th>
+                        <th>Target Anchor</th>
+                        <th>Status</th>
+                        <th>Link Found</th>
+                        <th>HTTP Status</th>
+                        <th>Context</th>
+                        <th>Last Checked</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="backlinksBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" id="pagination" style="display: flex; justify-content: center; gap: 10px; margin-top: 30px;"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

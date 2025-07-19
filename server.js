@@ -11,23 +11,15 @@ const ReportGenerator = require('./reportGenerator');
 const GitHubIntegration = require('./githubIntegration');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
+const upload = multer({ dest: 'uploads/' });
 
-const upload = multer({ dest: uploadsDir });
-
-// Use /tmp for database in serverless environments
-const dbPath = process.env.VERCEL ? '/tmp/backlinks.db' : './backlinks.db';
-const db = new sqlite3.Database(dbPath);
+const db = new sqlite3.Database('./backlinks.db');
 
 // Initialize GitHub integration
 const github = new GitHubIntegration(db);
@@ -688,22 +680,16 @@ setInterval(autoCheckLinks, 24 * 60 * 60 * 1000);
 // Run initial check after 5 minutes
 setTimeout(autoCheckLinks, 5 * 60 * 1000);
 
-// Export app for Vercel
-module.exports = app;
-
-// Only start server if not in Vercel environment
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-    app.listen(PORT, () => {
-        console.log(`Server running at http://localhost:${PORT}`);
-        console.log('Automatic link checking enabled (every 24 hours)');
-        
-        // Schedule GitHub uploads (daily at 2 AM)
-        github.scheduleUploads();
-        
-        if (github.getStatus().enabled) {
-            console.log('GitHub integration enabled - reports will be uploaded daily');
-        } else {
-            console.log('GitHub integration disabled - set GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO to enable');
-        }
-    });
-}
+app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+    console.log('Automatic link checking enabled (every 24 hours)');
+    
+    // Schedule GitHub uploads (daily at 2 AM)
+    github.scheduleUploads();
+    
+    if (github.getStatus().enabled) {
+        console.log('GitHub integration enabled - reports will be uploaded daily');
+    } else {
+        console.log('GitHub integration disabled - set GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO to enable');
+    }
+});
